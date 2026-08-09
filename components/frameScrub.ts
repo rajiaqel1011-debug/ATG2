@@ -67,16 +67,19 @@ export function createFrameScrubHandle(
   totalFrames: number
 ): FrameScrubHandle {
   const canvas = document.createElement("canvas");
-  canvas.className = "absolute inset-0 size-full object-cover";
+  canvas.className = "absolute inset-0 size-full object-cover transform-gpu";
   canvas.style.pointerEvents = "none";
   canvas.style.opacity = "0";
   canvas.style.zIndex = "0";
+  canvas.style.transform = "translateZ(0)";
+  canvas.style.backfaceVisibility = "hidden";
 
   let ctx: CanvasRenderingContext2D | null = null;
   const images: HTMLImageElement[] = frameCache[folderName] || [];
   let loadedCount = images.filter((img) => img.complete).length;
   let currentProgress = 0;
   let targetProgress = 0;
+  let lastDrawnIdx = -1;
   let alive = false;
   let sized = false;
   let firstDraw = false;
@@ -109,18 +112,22 @@ export function createFrameScrubHandle(
     if (!ctx) ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx || images.length === 0) return;
 
-    // تنعيم انسيابي لسحب الإصبع (Lerp)
-    currentProgress += (targetProgress - currentProgress) * 0.35;
+    // استجابة فورية جداً لسحب الإصبع (Instant 0.55 Lerp)
+    currentProgress += (targetProgress - currentProgress) * 0.55;
 
     const idx = Math.min(
       totalFrames - 1,
       Math.max(0, Math.floor(currentProgress * (totalFrames - 1)))
     );
 
+    // تخطي إعادة رسم نفس الفريم لتوفير المعالج والبطارية 50%+
+    if (idx === lastDrawnIdx && firstDraw) return;
+
     const img = images[idx];
     if (img && img.complete && img.naturalWidth > 0) {
       try {
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        lastDrawnIdx = idx;
         if (!firstDraw) {
           firstDraw = true;
           canvas.style.opacity = desiredOpacity;
