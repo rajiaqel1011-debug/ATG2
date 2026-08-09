@@ -1,0 +1,335 @@
+@import "tailwindcss";
+
+/* ═══════════════ ATG Brand Identity ═══════════════
+   Desert Ochre   #D5AF66  اللون القائد ~50%
+   Support Ochre  #B8923F  ثانوي       ~25%
+   Oasis Blue     #185F74  التأكيد     ~10%
+   Life Green     #0B7A5C  التمايز     ≤8%
+   Dusk Ink       #1E1A17  النصوص     ~5%
+   Ivory          #F4F0E4  الخلفية     E4
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  --ochre: #d5af66;
+  --ochre-deep: #b8923f;
+  --oasis: #185f74;
+  --pine: #0b7a5c;
+  --ink: #1e1a17;
+  --ivory: #f4f0e4;
+  --ivory-soft: #f9f6ef;
+}
+
+@theme inline {
+  --color-ochre: var(--ochre);
+  --color-ochre-deep: var(--ochre-deep);
+  --color-oasis: var(--oasis);
+  --color-pine: var(--pine);
+  --color-ink: var(--ink);
+  --color-ivory: var(--ivory);
+  --color-ivory-soft: var(--ivory-soft);
+
+  --font-heading: var(--font-ibm-plex-arabic), sans-serif;
+  --font-body: var(--font-ibm-plex-arabic), sans-serif;
+  --font-accent: var(--font-ibm-plex-arabic), sans-serif;
+}
+
+/* ملاحظة: لا تستخدم scroll-behavior:smooth مع ScrollTrigger — بيكسر الـ snap والقياسات */
+
+/* منع التمرير الأفقي من العناصر الزخرفية النازّة (هالة الشمس، التموّجات…).
+   clip بدل hidden: يقصّ الفائض أفقياً دون إنشاء حاوية تمرير تكسر position:sticky. */
+html {
+  overflow-x: clip;
+}
+body {
+  background: var(--ivory);
+  color: var(--ink);
+  font-family: var(--font-ibm-plex-arabic), sans-serif;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--ochre);
+  color: var(--ink);
+}
+
+/* تركيز واضح للوحة المفاتيح عبر الموقع */
+:focus-visible {
+  outline: 2px solid var(--ochre-deep);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* احترام تقليل الحركة — تُخفَّض الأنيميشن الزخرفية */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══ خلفية مسرح الهيرو ═══
+   إطار المشهد نفسه (عند ٠٫١٧ث = موضع بدء الفيديو) خلف عنصر الفيديو. يمنع
+   ظهور الخلفية العاجية في اللحظة التي يتلاشى فيها اللودر قبل أن يرسم الفيديو
+   إطاره — وهي «الومضة البيضاء». تُختار حسب الشاشة لتطابق النسخة المعروضة. */
+.hero-stage {
+  background-color: var(--ivory);
+}
+
+/* ═══ طبقة السينما: حبيبات فيلم + فينييت دافئة ═══ */
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  opacity: 0.5;
+}
+.warm-vignette {
+  background: radial-gradient(
+    120% 95% at 50% 42%,
+    transparent 58%,
+    rgba(43, 35, 32, 0.16) 100%
+  );
+}
+
+/* ═══ الذهبي البارز — للسطور المميزة فوق المشاهد المضيئة ═══
+   لونٌ صريح من الهوية (مغرة داعمة) بلا تدرّج: حدٌّ حبري رفيع يرسم
+   الحروف + ظل ناعم يرفعها عن سماء الصحراء الساطعة — واضح ويُقرأ */
+.gold-metallic {
+  color: var(--ochre-deep);
+  -webkit-text-stroke: 0.8px rgba(30, 26, 23, 0.35);
+  paint-order: stroke fill;
+  text-shadow:
+    0 1px 2px rgba(30, 26, 23, 0.35),
+    0 6px 24px rgba(30, 26, 23, 0.22);
+}
+
+/* ═══ نبض شعار عجلة ATG بالضوء الذهبي الخفيف ═══ */
+@keyframes pulseGold {
+  0%, 100% {
+    opacity: 0.05;
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 0 0px rgba(213, 175, 102, 0));
+  }
+  50% {
+    opacity: 0.14;
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: drop-shadow(0 0 40px rgba(213, 175, 102, 0.5));
+  }
+}
+.animate-pulse-gold {
+  animation: pulseGold 4.5s ease-in-out infinite;
+}
+
+/* ═══ أزرق الواحة — بديل الذهبي فوق مشاهد الكثبان الرملية، حيث الذهبي يذوب
+   في الخلفية الرملية. تباين قوي (بارد فوق دافئ) + نفس معالجة الحدّ والظل ═══ */
+.blue-metallic {
+  color: var(--oasis);
+  -webkit-text-stroke: 0.8px rgba(30, 26, 23, 0.3);
+  paint-order: stroke fill;
+  text-shadow:
+    0 1px 2px rgba(30, 26, 23, 0.3),
+    0 6px 24px rgba(30, 26, 23, 0.18);
+}
+
+/* ═══ ذهبٌ مضيء — للعناوين فوق المشاهد الداكنة ═══ */
+.gold-luminous {
+  color: var(--ochre);
+  text-shadow:
+    0 0 32px rgba(213, 175, 102, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.55);
+}
+
+/* عناوين عاجية فوق المشاهد الداكنة */
+.ivory-cinema {
+  color: var(--ivory);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ═══ وزن الطباعة — IBM Plex Sans Arabic يميل للخفة، نثبّت حضوره ═══ */
+/* المتن: وزن متوسط بدل الرفيع */
+body {
+  font-weight: 500;
+}
+/* العناوين الكبرى: أقصى وزن + تثخين بصري رفيع بحدٍّ من لون الحرف نفسه */
+h1,
+h2 {
+  font-weight: 700;
+  -webkit-text-stroke: 0.4px currentColor;
+}
+h3 {
+  font-weight: 700;
+}
+
+/* ألوان مسار الرحلة في عنقود الذروة — تتبدل مع إضاءة المشهد */
+[data-scene="dark"] .climax-num {
+  color: rgba(242, 234, 216, 0.5);
+}
+[data-scene="dark"] .climax-label {
+  color: rgba(242, 234, 216, 0.9);
+}
+[data-scene="light"] .climax-num {
+  color: rgba(43, 35, 32, 0.5);
+}
+[data-scene="light"] .climax-label {
+  color: rgba(43, 35, 32, 0.85);
+}
+.climax-num,
+.climax-label {
+  transition: color 0.7s ease;
+}
+
+/* ═══════════════ أنماط الهوية (باترنز) ═══════════════ */
+
+/* شبكة خلايا شمسية خفيفة — للأقسام الداكنة (تذكّر باللوح) */
+.pattern-solar-grid {
+  background-image: linear-gradient(rgba(213, 175, 102, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(213, 175, 102, 0.06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 78%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 30%, transparent 78%);
+}
+
+/* خطوط كثبان طوبوغرافية — للأقسام الفاتحة */
+.pattern-dunes {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='320' viewBox='0 0 1200 320' fill='none' stroke='%23b8923f' stroke-width='1.4' stroke-opacity='0.14'%3E%3Cpath d='M0 240 C 200 200 340 260 560 220 S 940 160 1200 210'/%3E%3Cpath d='M0 275 C 220 240 380 292 600 255 S 980 200 1200 250'/%3E%3Cpath d='M0 205 C 180 170 320 220 520 185 S 900 130 1200 175'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 140% auto;
+}
+
+/* هالة شمس ناعمة خلف العناوين */
+.sun-halo {
+  position: relative;
+}
+.sun-halo::before {
+  content: "";
+  position: absolute;
+  inset: auto auto auto 0;
+  top: -30%;
+  inset-inline-start: -10%;
+  width: 420px;
+  height: 420px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(213, 175, 102, 0.28), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(6px);
+}
+.sun-halo > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* فاصل ذهبي يرسم نفسه عند الظهور */
+.rule-draw {
+  transform-origin: right;
+  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scaleX(0);
+}
+.rule-draw[data-shown="true"] {
+  transform: scaleX(1);
+}
+
+/* بطاقة بلمعة ذهبية تمرّ عند التحويم */
+.shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 250, 235, 0.35) 50%,
+    transparent 70%
+  );
+  transition: transform 0.9s ease;
+  pointer-events: none;
+}
+.shine:hover::after {
+  transform: translateX(120%);
+}
+
+/* حلقات تموّج اللودر */
+@keyframes ripple {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.ripple {
+  animation: ripple 1.8s ease-out infinite;
+}
+
+/* سكرول بار أنيق بالهوية */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ivory);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ochre-deep);
+  border-radius: 6px;
+  border: 2px solid var(--ivory);
+}
+
+/* ═══════════════ Micro-Interactions & Hover Polish ═══════════════ */
+
+/* زر بهالة ضوئية تفاعلية وتدرج تحويم سَلِس */
+.btn-glow {
+  position: relative;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  isolation: isolate;
+}
+.btn-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--ochre), var(--ochre-deep), var(--oasis));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.btn-glow:hover::before {
+  opacity: 1;
+}
+.btn-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(184, 146, 99, 0.4);
+}
+.btn-glow:active {
+  transform: translateY(0);
+}
+
+/* تأثير التفاعلية والتدرج الذهبي للبطاقات */
+.card-interactive-glow {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+.card-interactive-glow:hover {
+  transform: translateY(-4px);
+  border-color: var(--ochre-deep) !important;
+  box-shadow: 0 16px 36px -10px rgba(184, 146, 63, 0.22);
+}
+
+/* شارات الشركاء التفاعلية */
+.partner-badge {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.partner-badge:hover {
+  transform: translateY(-3px) scale(1.03);
+  border-color: var(--ochre-deep);
+  box-shadow: 0 8px 24px -6px rgba(184, 146, 63, 0.35);
+}
+
