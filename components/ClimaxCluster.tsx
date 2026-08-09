@@ -71,12 +71,12 @@ export default function ClimaxCluster() {
 
     let curVideo = 0; // الفيديو الفعّال الحالي (لرصد لحظة الفلاش)
 
-    // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة.
-    // preload=none باقٍ فلا تُحمّل حتى يستدعيها التسليح — التحميل الكسول محفوظ.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    videos.forEach((v, i) => {
-      v.src = withV(`/videos/web/${isMobile ? "mobile/" : ""}${NAMES[i]}.mp4`);
-    });
+    if (!isMobile) {
+      videos.forEach((v, i) => {
+        v.src = withV(`/videos/web/${NAMES[i]}.mp4`);
+      });
+    }
 
     // ─── محرك فريمات WebP للموبايل (سلس 60fps مثل أبل) ───
     const engines: FrameScrubHandle[] = [];

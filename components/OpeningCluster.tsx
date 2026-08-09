@@ -63,10 +63,10 @@ export default function OpeningCluster() {
 
     // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    const pick = (n: string) =>
-      withV(`/videos/web/${isMobile ? "mobile/" : ""}${n}.mp4`);
-    vA.src = pick("drop-to-desert");
-    vB.src = pick("panel");
+    if (!isMobile) {
+      vA.src = withV("/videos/web/drop-to-desert.mp4");
+      vB.src = withV("/videos/web/panel.mp4");
+    }
 
     // ─── محرك فريمات WebP للموبايل (سلس 60fps مثل أبل) ───
     const engines: FrameScrubHandle[] = [];
@@ -82,37 +82,30 @@ export default function OpeningCluster() {
       });
     }
 
-    // ─── تدفئة: «نمرّ على الفيديو» نيابةً عن المستخدم قبل أن يصل ───
-    // القطرة (vA) ظاهرة، لكن اللودر يغطّيها في أول زيارة → ندفّئها هناك أولاً.
-    // اللوح (vB) شفافيته صفر دائماً حتى يحين دوره → تدفئته آمنة في كل حال.
-    // لا نُلغيها بالسكرول (كان هذا خطأ النسخة السابقة: تُلغى قبل أن تبدأ).
+    // ─── تدفئة: «نمرّ على الفيديو» نيابةً عن المستخدم قبل أن يصل (ديسكتوب فقط) ───
     const firstVisit =
       typeof sessionStorage !== "undefined" && !sessionStorage.getItem("atg-loaded");
-    // تُشغَّل فعلياً بعد تعريف recompute (فهي تُسلّمه القيادة عند انتهائها)
     const warms: Array<{ cancel: () => void; active: () => boolean }> = [];
     const warming = () => warms.some((w) => w.active());
 
-    // نقطة بداية السحب لكل فيديو. القطرة: 0.17 لتطابق آخر فريم اللودر.
-    // اللوح: 0 — لأن أول فريم فيه == آخر فريم القطرة (وُلّدا متطابقين)، فالقطع
-    // بينهما غير مرئي. لا offset ولا تلاشي = تسلسل واحد متصل.
     const START = [0.17, 0];
 
-    // مدى السكرول لكل فيديو (اتحاد نطاقات محطاته الموزونة) بصيغة تقدّم [0..1]
     const bounds = videos.map((_, vi) => {
       const idxs = STATIONS.map((s, i) => (s.video === vi ? i : -1)).filter((i) => i >= 0);
       return { start: RANGES[Math.min(...idxs)].start, end: RANGES[Math.max(...idxs)].end, vi };
     });
 
-    // مدد الفيديوهات (تُقرأ عند توفّر الميتاداتا)
     const durations = videos.map(() => 0);
-    videos.forEach((v, i) => {
-      const grab = () => {
-        durations[i] = v.duration || 0;
-      };
-      if (v.readyState >= 1) grab();
-      else v.addEventListener("loadedmetadata", grab, { once: true });
-      v.pause(); // لا تشغيل تلقائي — الفيديو يُقاد بالسكرول فقط
-    });
+    if (!isMobile) {
+      videos.forEach((v, i) => {
+        const grab = () => {
+          durations[i] = v.duration || 0;
+        };
+        if (v.readyState >= 1) grab();
+        else v.addEventListener("loadedmetadata", grab, { once: true });
+        v.pause();
+      });
+    }
 
     // كشف نص المحطة + مسار الرحلة (تبديل عند تغيّر المحطة فقط)
     const applyStation = (idx: number) => {
