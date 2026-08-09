@@ -239,9 +239,9 @@ export default function OpeningCluster() {
           ref={(el) => {
             textRefs.current[0] = el;
           }}
-          className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-between pt-14 pb-36 text-center transition-[opacity,transform] duration-700 ease-out md:items-start md:justify-center md:py-0 md:ps-[7vw] md:text-right"
+          className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-between pt-20 pb-36 text-center transition-[opacity,transform] duration-700 ease-out md:items-start md:justify-center md:py-0 md:ps-[7vw] md:text-right"
         >
-          <h1 className="text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.5] -mt-2 md:-mt-4">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl text-ink leading-[1.5]">
             <span className="font-normal block text-ink/90 drop-shadow-sm">من قطرةِ ماءٍ…</span>
             <span className="gold-metallic font-bold block mt-1">تبدأ الحكاية</span>
           </h1>
