@@ -63,8 +63,8 @@ export default function OpeningCluster() {
 
     // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    // تشغيل فيديو عالي الدقة والوضوح (Full HD) مباشرةً لضمان أعلى جودة بصرية حادة
-    const pick = (n: string) => withV(`/videos/web/${n}.mp4`);
+    const pick = (n: string) =>
+      withV(`/videos/web/${isMobile ? "mobile/" : ""}${n}.mp4`);
     vA.src = pick("drop-to-desert");
     vB.src = pick("panel");
 

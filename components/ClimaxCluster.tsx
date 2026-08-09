@@ -71,9 +71,10 @@ export default function ClimaxCluster() {
 
     let curVideo = 0; // الفيديو الفعّال الحالي (لرصد لحظة الفلاش)
 
-    // تشغيل فيديو عالي الدقة والوضوح (Full HD) مباشرةً لضمان أعلى جودة بصرية حادة
+    // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     videos.forEach((v, i) => {
-      v.src = withV(`/videos/web/${NAMES[i]}.mp4`);
+      v.src = withV(`/videos/web/${isMobile ? "mobile/" : ""}${NAMES[i]}.mp4`);
     });
 
 

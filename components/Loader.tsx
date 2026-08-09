@@ -23,15 +23,11 @@ export default function Loader() {
   const barRef = useRef<HTMLSpanElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
 
-  // القرار: هل نعرض المشهد أم نرفع الغطاء فوراً؟
+  // القرار: عرض اللودر دائماً لضمان تجربة فاخرة غير منقطعة
   useEffect(() => {
-    const seen = sessionStorage.getItem("atg-loaded");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // القرار لا يُعرف إلا على العميل (sessionStorage + تفضيل الحركة)، والغطاء
-    // مرسومٌ من الخادم عمداً كي لا يومض المحتوى — فتبديل الطور هنا مقصود.
-    if (seen || reduce) {
+    if (reduce) {
       document.body.style.overflow = "";
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase("gone");
     } else {
       document.body.style.overflow = "hidden"; // امنع التمرير أثناء اللودر
@@ -45,9 +41,11 @@ export default function Loader() {
     const v = videoRef.current;
     if (!root || !v) return;
 
-    // تشغيل فيديو اللودر بنفس دقة الهيرو (1080p) لضمان تطابق الفريمات بالملي
+    // استخدام نسخة الموبايل الخفيفة (720p) للموبايل لضمان الأداء السلس 60fps ورخاوة الحركة
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    v.src = withV("/videos/web/loader.mp4"); // ← دائماً 1080p مثل الهيرو تماماً
+    v.src = isMobile
+      ? withV("/videos/web/mobile/loader.mp4")
+      : withV("/videos/web/loader.mp4");
     v.removeAttribute("poster"); // ← بلا صورة ثابتة إطلاقاً، العاجي هو الخلفية
 
     // التأكد من خصائص الكتم والـ playsinline الصارمة للموبايل لضمان التشغيل التلقائي
