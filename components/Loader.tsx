@@ -135,34 +135,12 @@ export default function Loader() {
       { autoAlpha: 1, y: 0, duration: 0.6, delay: 0.1, ease: "power3.out" }
     );
 
-    // ─── على أجهزة الموبايل: انسيابية مضمونة 100% لشريط التقدّم والتلاشي ───
-    if (isMobile) {
-      const progressObj = { value: 0 };
-      const mobileTween = gsap.to(progressObj, {
-        value: 1,
-        duration: 1.8,
-        ease: "power2.inOut",
-        onUpdate: () => {
-          if (barRef.current) {
-            barRef.current.style.transform = `scaleX(${progressObj.value})`;
-          }
-        },
-        onComplete: () => {
-          finish();
-        },
-      });
-
-      return () => {
-        mobileTween.kill();
-      };
-    }
-
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("ended", onEnded);
     v.loop = false;
 
-    // سرعة تشغيل مستقرة على الديسكتوب
-    v.playbackRate = 1.5;
+    // سرعة تشغيل اللودر
+    v.playbackRate = isMobile ? 1.2 : 1.5;
 
     const playPromise = v.play();
     if (playPromise !== undefined) {
