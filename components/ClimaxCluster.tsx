@@ -71,13 +71,30 @@ export default function ClimaxCluster() {
 
     let curVideo = 0; // الفيديو الفعّال الحالي (لرصد لحظة الفلاش)
 
-    // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة
+    // نخدم نسخة الموبايل الخفيفة (720p) للشاشات الصغيرة والديسكتوب النسخة الكاملة.
+    // preload=none باقٍ فلا تُحمّل حتى يستدعيها التسليح — التحميل الكسول محفوظ.
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
     videos.forEach((v, i) => {
       v.src = withV(`/videos/web/${isMobile ? "mobile/" : ""}${NAMES[i]}.mp4`);
     });
 
-
+    // ─── محرك فريمات WebP للموبايل (سلس 60fps مثل أبل) ───
+    const engines: FrameScrubHandle[] = [];
+    if (isMobile) {
+      const frameConfigs = [
+        { video: videos[0], folder: "cable", count: 241 },
+        { video: videos[1], folder: "well", count: 241 },
+        { video: videos[2], folder: "water-burst", count: 169 },
+        { video: videos[3], folder: "farm", count: 121 },
+      ];
+      frameConfigs.forEach((cfg) => {
+        if (cfg.video) {
+          const e = createFrameScrubHandle(cfg.video, cfg.folder, cfg.count);
+          e.start();
+          engines.push(e);
+        }
+      });
+    }
 
     // مدى السكرول لكل فيديو (اتحاد نطاقات محطاته الموزونة) بصيغة تقدّم [0..1]
     const bounds = videos.map((_, vi) => {
@@ -155,12 +172,19 @@ export default function ClimaxCluster() {
       const v = videos[b.vi];
       const dur = durations[b.vi] || v.duration || 10;
       const targetTime = local * Math.max(0.1, dur - 0.05);
-      if (v.readyState >= 1 && !v.seeking && !warm?.active()) {
-        if (Math.abs(v.currentTime - targetTime) > 0.015) v.currentTime = targetTime;
+      if (engines.length) {
+        // ── موبايل: محرك فريمات WebP يتولى العرض بسلاسة مطلقة 60fps ──
+        engines[b.vi]?.seekTo(local);
+        engines.forEach((e, i) => e.setOpacity(i <= b.vi ? "1" : "0"));
+      } else {
+        // ── ديسكتوب: السلوك الأصلي بلا تغيير ──
+        if (v.readyState >= 1 && !v.seeking && !warm?.active()) {
+          if (Math.abs(v.currentTime - targetTime) > 0.015) v.currentTime = targetTime;
+        }
+        videos.forEach((vv, i) => {
+          vv.style.opacity = i <= b.vi ? "1" : "0";
+        });
       }
-      videos.forEach((vv, i) => {
-        vv.style.opacity = i <= b.vi ? "1" : "0";
-      });
 
       // فلاش أبيض عند عبور حدود الانفجار ↔ المزرعة (بالاتجاهين) — فريماهما
       // غير متطابقين فالفلاش يخفي القطع؛ بقية الحدود قطع خام لأن فريماتها متطابقة
@@ -189,6 +213,7 @@ export default function ClimaxCluster() {
     recompute();
 
     return () => {
+      engines.forEach((e) => e.destroy());
       warm?.cancel();
       armObserver.disconnect();
       window.removeEventListener("scroll", onScroll);

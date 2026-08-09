@@ -76,7 +76,14 @@ body {
    ظهور الخلفية العاجية في اللحظة التي يتلاشى فيها اللودر قبل أن يرسم الفيديو
    إطاره — وهي «الومضة البيضاء». تُختار حسب الشاشة لتطابق النسخة المعروضة. */
 .hero-stage {
-  background-color: var(--ivory);
+  background-image: url("/videos/web/posters/drop-start.jpg?v=20260728");
+  background-size: cover;
+  background-position: center;
+}
+@media (max-width: 768px) {
+  .hero-stage {
+    background-image: url("/videos/web/posters/drop-start-mobile.jpg?v=20260728");
+  }
 }
 
 /* ═══ طبقة السينما: حبيبات فيلم + فينييت دافئة ═══ */

@@ -68,6 +68,20 @@ export default function OpeningCluster() {
     vA.src = pick("drop-to-desert");
     vB.src = pick("panel");
 
+    // ─── محرك فريمات WebP للموبايل (سلس 60fps مثل أبل) ───
+    const engines: FrameScrubHandle[] = [];
+    if (isMobile && vA && vB) {
+      const frameConfigs = [
+        { video: vA, folder: "drop-to-desert", count: 241 },
+        { video: vB, folder: "panel", count: 241 },
+      ];
+      frameConfigs.forEach((cfg) => {
+        const e = createFrameScrubHandle(cfg.video, cfg.folder, cfg.count);
+        e.start();
+        engines.push(e);
+      });
+    }
+
     // ─── تدفئة: «نمرّ على الفيديو» نيابةً عن المستخدم قبل أن يصل ───
     // القطرة (vA) ظاهرة، لكن اللودر يغطّيها في أول زيارة → ندفّئها هناك أولاً.
     // اللوح (vB) شفافيته صفر دائماً حتى يحين دوره → تدفئته آمنة في كل حال.
@@ -131,12 +145,19 @@ export default function OpeningCluster() {
       const offset = START[b.vi] ?? 0;
       const dur = durations[b.vi] || v.duration || 10;
       const targetTime = offset + local * Math.max(0.1, dur - offset - 0.05);
-      if (v.readyState >= 1 && !v.seeking && !warming()) {
-        if (Math.abs(v.currentTime - targetTime) > 0.015) v.currentTime = targetTime;
+      if (engines.length) {
+        // ── موبايل: محرك فريمات WebP يتولى العرض بسلاسة مطلقة 60fps ──
+        engines[b.vi]?.seekTo(local);
+        engines.forEach((e, i) => e.setOpacity(i <= b.vi ? "1" : "0"));
+      } else {
+        // ── ديسكتوب: السلوك الأصلي بلا تغيير ──
+        if (v.readyState >= 1 && !v.seeking && !warming()) {
+          if (Math.abs(v.currentTime - targetTime) > 0.015) v.currentTime = targetTime;
+        }
+        videos.forEach((vv, i) => {
+          vv.style.opacity = i <= b.vi ? "1" : "0";
+        });
       }
-      videos.forEach((vv, i) => {
-        vv.style.opacity = i <= b.vi ? "1" : "0";
-      });
 
       // مسار الرحلة (تعبئة مستمرة) + كشف النص (المحطة التي يقع التقدّم في نطاقها)
       if (railFillRef.current)
@@ -175,6 +196,7 @@ export default function OpeningCluster() {
     recompute();
 
     return () => {
+      engines.forEach((e) => e.destroy());
       warms.forEach((w) => w.cancel());
       vA.removeEventListener("loadeddata", kick);
       window.removeEventListener("scroll", onScroll);
@@ -190,13 +212,14 @@ export default function OpeningCluster() {
       style={{ height: `${TOTAL_W * UNIT_VH + 100}vh` }}
     >
       {/* ═══ المسرح الثابت — يبقى في الشاشة بينما يمرّ القسم بالسكرول ═══ */}
-      <div className="hero-stage sticky top-0 h-screen h-[100dvh] w-full overflow-hidden">
+      <div className="hero-stage sticky top-0 h-screen overflow-hidden">
         {/* .hero-stage في globals.css = إطار المشهد خلف الفيديو (نسخة لكل شاشة) */}
         {/* الفيديوهات (خلفية سينمائية — المحتوى في النصوص) */}
         {/* المصدر يُضبط في الإفكت حسب حجم الشاشة (موبايل ٧٢٠p / ديسكتوب كامل) */}
         <video
           ref={videoARef}
-          className="absolute inset-0 size-full object-cover object-center opacity-100"
+          className="absolute inset-0 size-full object-cover opacity-100"
+          poster="/videos/web/posters/drop-to-desert.jpg"
           muted
           playsInline
           preload="auto"
@@ -204,7 +227,8 @@ export default function OpeningCluster() {
         />
         <video
           ref={videoBRef}
-          className="absolute inset-0 size-full object-cover object-center opacity-0"
+          className="absolute inset-0 size-full object-cover opacity-0"
+          poster="/videos/web/posters/panel.jpg"
           muted
           playsInline
           preload="auto"

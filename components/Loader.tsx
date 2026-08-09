@@ -23,11 +23,15 @@ export default function Loader() {
   const barRef = useRef<HTMLSpanElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
 
-  // القرار: عرض اللودر دائماً لضمان تجربة فاخرة غير منقطعة
+  // القرار: هل نعرض المشهد أم نرفع الغطاء فوراً؟
   useEffect(() => {
+    const seen = sessionStorage.getItem("atg-loaded");
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
+    // القرار لا يُعرف إلا على العميل (sessionStorage + تفضيل الحركة)، والغطاء
+    // مرسومٌ من الخادم عمداً كي لا يومض المحتوى — فتبديل الطور هنا مقصود.
+    if (seen || reduce) {
       document.body.style.overflow = "";
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPhase("gone");
     } else {
       document.body.style.overflow = "hidden"; // امنع التمرير أثناء اللودر
@@ -41,12 +45,10 @@ export default function Loader() {
     const v = videoRef.current;
     if (!root || !v) return;
 
-    // استخدام نسخة الموبايل الخفيفة (720p) للموبايل لضمان الأداء السلس 60fps ورخاوة الحركة
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    v.src = isMobile
+    // اختيار نسخة اللودر حسب الشاشة (موبايل ٧٢٠p / ديسكتوب ١٠٨٠p)
+    v.src = window.matchMedia("(max-width: 768px)").matches
       ? withV("/videos/web/mobile/loader.mp4")
       : withV("/videos/web/loader.mp4");
-    v.removeAttribute("poster"); // ← بلا صورة ثابتة إطلاقاً، العاجي هو الخلفية
 
     // التأكد من خصائص الكتم والـ playsinline الصارمة للموبايل لضمان التشغيل التلقائي
     v.muted = true;
@@ -65,15 +67,14 @@ export default function Loader() {
       if (barRef.current)
         gsap.to(barRef.current, { scaleX: 1, duration: 0.25, ease: "none", overwrite: true });
       
-      // تلاشٍ انسيابي حريري — يذيب اللودر في الهيرو الذي تحته تماماً
-      // لا نُحرّر التمرير قبل اختفاء اللودر الكامل لمنع أي ارتداد للصفحة
-      root.style.transition = "opacity 0.5s ease-in-out";
+      // تلاشٍ انسيابي حريري (٠٫٤ث) يذيب مشهد اللودر بداخل مشهد الهيرو بلا قفزات
+      root.style.transition = "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
       root.style.opacity = "0";
       root.style.pointerEvents = "none";
       window.setTimeout(() => {
         document.body.style.overflow = "";
         setPhase("gone");
-      }, 520);
+      }, 420);
     };
 
     // بدء التحميل المسبق لإطارات الموبايل فوراً عند تشغيل اللودر
@@ -132,19 +133,21 @@ export default function Loader() {
     gsap.fromTo(
       logoRef.current,
       { autoAlpha: 0, y: 12 },
-      { autoAlpha: 1, y: 0, duration: 0.6, delay: 0.1, ease: "power3.out" }
+      { autoAlpha: 1, y: 0, duration: 0.8, delay: 0.2, ease: "power3.out" }
     );
 
     v.addEventListener("timeupdate", onTime);
     v.addEventListener("ended", onEnded);
     v.loop = false;
 
-    // سرعة تشغيل اللودر
+    // سرعة تشغيل مستقرة على الموبايل
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     v.playbackRate = isMobile ? 1.2 : 1.5;
 
     const playPromise = v.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
+        // في حال منع تشغيل الفيديو المباشر من الموبايل (كوضع توفير الطاقة)
         sceneDone = true;
         tick();
       });
@@ -152,8 +155,8 @@ export default function Loader() {
 
     // نبضة دورية: تُقدّم الشريط حتى لو توقّف الفيديو أو مُنع تشغيله
     const pulse = window.setInterval(tick, 200);
-    // سقف أمان
-    const safety = window.setTimeout(finish, 6000);
+    // سقف أمان: لا تحبس الزائر أكثر من ١٢ ثانية مهما كانت الشبكة
+    const safety = window.setTimeout(finish, 12000);
 
     return () => {
       v.removeEventListener("timeupdate", onTime);
@@ -168,14 +171,17 @@ export default function Loader() {
   return (
     <div
       ref={rootRef}
-      className="fixed inset-0 z-[200] bg-ivory h-screen h-[100dvh] w-full overflow-hidden"
+      className="fixed inset-0 z-[200] bg-ivory"
       aria-label="جارٍ التحميل"
       role="status"
     >
-      {/* المصدر يُضبط في الإفكت حسب حجم الشاشة بدون أي صورة بوستر في البداية لتجنب الومضة */}
+      {/* المصدر يُضبط في الإفكت حسب حجم الشاشة */}
+      {/* الغطاء الساكن = أول فريم من مشهد اللودر نفسه. (كان صورة القطرة سابقاً
+          فيظهر مشهد الهيرو لحظةً قبل بدء اللودر — قفزة بصرية غير مقبولة.) */}
       <video
         ref={videoRef}
-        className="absolute inset-0 size-full object-cover object-center"
+        className="absolute inset-0 size-full object-cover"
+        poster={`/videos/web/posters/loader.jpg?v=${MEDIA_V}`}
         muted
         playsInline
         preload="auto"
