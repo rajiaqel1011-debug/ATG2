@@ -7,13 +7,14 @@ import Reveal from "@/components/Reveal";
 import CountUp from "@/components/CountUp";
 import ProjectCard from "@/components/ProjectCard";
 import ProjectModal from "@/components/ProjectModal";
-import { getStoredProjects } from "@/lib/projectsStore";
+import { getStoredProjects, fetchServerProjects } from "@/lib/projectsStore";
 import { Project } from "@/types/project";
 
 const stats = [
   { prefix: "+", num: 20, unit: "ميجاوات", label: "قدرة منجزة في السعودية" },
   { prefix: "+", num: 200, unit: "منظومة", label: "ضخ شمسي منفّذة" },
-  { prefix: "", num: 2, unit: "دولة", label: "الأردن والسعودية" },
+  { prefix: "+", num: 100, unit: "٪", label: "التزام بالكود السعودي SBC" },
+  { prefix: "+", num: 10, unit: "سنوات", label: "خبرة هندسية تراكمية" },
 ];
 
 const sectors = [
@@ -31,6 +32,9 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     setProjectsList(getStoredProjects());
+    fetchServerProjects().then((data) => {
+      if (data) setProjectsList(data);
+    });
   }, []);
 
   const filteredProjects = projectsList.filter((p) => {

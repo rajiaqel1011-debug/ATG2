@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getStoredProjects, saveProjects, compressImage } from "@/lib/projectsStore";
+import { getStoredProjects, saveProjects, compressImage, fetchServerProjects } from "@/lib/projectsStore";
 import {
   checkIsAuthenticated,
   getAdminCreds,
@@ -54,6 +54,9 @@ export default function AdminPage() {
     setIsClient(true);
     setIsAuthenticated(checkIsAuthenticated());
     setProjects(getStoredProjects());
+    fetchServerProjects().then((data) => {
+      if (data) setProjects(data);
+    });
   }, []);
 
   const handleLogin = (e: React.FormEvent) => {
