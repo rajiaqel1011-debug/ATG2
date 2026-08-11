@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const COMPANY_EMAIL = "info@atg-solar.com";
+const COMPANY_EMAIL = "info@atggreen.com";
 const DEFAULT_WHATSAPP_NUMBER = "";
 
 export interface ATGServiceOption {

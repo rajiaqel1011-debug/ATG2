@@ -98,6 +98,14 @@ export default function Footer() {
               <li>المملكة العربية السعودية</li>
               <li>المملكة الأردنية الهاشمية</li>
               <li>السبت – الخميس · ٨ص – ٥م</li>
+              <li className="pt-1">
+                <a
+                  href="mailto:info@atggreen.com"
+                  className="inline-flex items-center gap-2 font-mono text-xs font-semibold text-ochre hover:underline"
+                >
+                  ✉️ info@atggreen.com
+                </a>
+              </li>
             </ul>
             <Link
               href="/contact"

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getStoredProjects, saveProjects } from "@/lib/projectsStore";
+import { getStoredProjects, saveProjects, compressImage } from "@/lib/projectsStore";
 import {
   checkIsAuthenticated,
   getAdminCreds,
@@ -30,6 +30,7 @@ export default function AdminPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [isChangingCreds, setIsChangingCreds] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isCompressingImg, setIsCompressingImg] = useState(false);
 
   // حقول التكفيل (تعديل الحساب)
   const [newUsername, setNewUsername] = useState("");
@@ -287,16 +288,6 @@ export default function AdminPage() {
               تسجيل الدخول الآمن ➔
             </button>
           </form>
-
-          <div className="mt-8 pt-6 border-t border-ochre/15 text-center">
-            <p className="font-body text-[0.7rem] text-ivory/40">
-              بيانات الدخول الافتراضية للوحة التحكم:
-              <br />
-              <strong className="text-ochre font-mono dir-ltr inline-block mt-1">
-                {currentCreds.username} | {currentCreds.passwordHash}
-              </strong>
-            </p>
-          </div>
         </div>
       </div>
     );
@@ -552,23 +543,27 @@ export default function AdminPage() {
                   صورة المشروع الرئيسية (رفع مباشر من الجهاز بنقرة واحدة) 📸
                 </label>
                 <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl border-2 border-dashed border-ochre/40 bg-ivory shadow-inner">
-                  {/* زر رفع ملف صورة من الجهاز */}
+                  {/* زر رفع ملف صورة من الجهاز مع الضغط الذكي السريع */}
                   <label className="cursor-pointer rounded-full bg-ochre-deep px-6 py-3 font-body text-xs font-bold text-ivory shadow-md transition-all hover:bg-ink hover:shadow-lg flex items-center gap-2 shrink-0">
-                    <span>📁 اختر صورة من الكمبيوتر/الهاتف</span>
+                    <span>{isCompressingImg ? "⏳ جاري ضغط ومعالجة الصورة..." : "📁 اختر صورة من الكمبيوتر/الهاتف"}</span>
                     <input
                       type="file"
                       accept="image/*"
+                      disabled={isCompressingImg}
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            if (event.target?.result) {
-                              setImg(event.target.result as string);
-                            }
-                          };
-                          reader.readAsDataURL(file);
+                          try {
+                            setIsCompressingImg(true);
+                            const compressed = await compressImage(file);
+                            setImg(compressed);
+                          } catch (err) {
+                            console.error("Error compressing image:", err);
+                            alert("تعذر معالجة الصورة. يرجى اختيار صورة أخرى.");
+                          } finally {
+                            setIsCompressingImg(false);
+                          }
                         }
                       }}
                     />
