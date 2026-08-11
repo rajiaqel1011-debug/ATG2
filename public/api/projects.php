@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // (تستبدل بالبيانات الخاصة بك إذا أنشأت Database في ICDSoft)
 // ════════════════════════════════════════════════════════════════
 $db_host = 'localhost';
-$db_name = 'YOUR_DB_NAME'; // اسم قاعدة البيانات
-$db_user = 'YOUR_DB_USER'; // اسم مستخدم قاعدة البيانات
-$db_pass = 'YOUR_DB_PASSWORD'; // كلمة مرور قاعدة البيانات
+$db_name = 'atggreen_quotes'; // اسم قاعدة البيانات الخاص بك
+$db_user = 'atggreen'; // اسم مستخدم قاعدة البيانات في ICDSoft
+$db_pass = 'YOUR_DB_PASSWORD'; // كلمة المرور الخاص بك في ICDSoft
 
 $dataFile = __DIR__ . '/projects_db.json';
 
